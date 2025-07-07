@@ -1,0 +1,123 @@
+// This is your optimized Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+// For query performance and scaling, consider Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // Ensure DATABASE_URL is set in your .env file
+}
+
+// Modelo para gerenciar informações de usuários/vendedores
+model Usuarios {
+  id        Int      @id @default(autoincrement())
+  nome      String   @db.VarChar(255)
+  email     String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)
+  vendas    Venda[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@map("usuarios")
+}
+
+// Modelo para gerenciar informações de clientes
+model Cliente {
+  id         Int      @id @default(autoincrement())
+  nome       String   @db.VarChar(255)
+  nascimento DateTime
+  telefone   String   @unique @db.VarChar(20)
+  bairro     String   @db.VarChar(100)
+  rua        String   @db.VarChar(255)
+  cidade     String   @db.VarChar(100)
+  estado     String   @db.VarChar(2)
+  vendas     Venda[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([telefone])
+  @@map("cliente")
+}
+
+// Modelo para gerenciar produtos
+model Produto {
+  id        Int       @id @default(autoincrement())
+  nome      String    @db.VarChar(255)
+  marca     String    @db.VarChar(100)
+  custo     Decimal   @db.Decimal(10, 2)
+  revenda   Decimal   @db.Decimal(10, 2)
+  minStock  Int       @default(0) // Estoque mínimo para alertas
+  estoque   Estoque[]
+  itens     Item[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("produto")
+}
+
+// Modelo para gerenciar estoque de produtos
+model Estoque {
+  id            Int      @id @default(autoincrement())
+  produtoId     Int      @map("id_produto")
+  qtdDisponivel Int      @map("qtd_disponivel")
+  produto       Produto  @relation(fields: [produtoId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([produtoId])
+  @@map("estoque")
+}
+
+// Modelo para gerenciar vendas
+model Venda {
+  id         Int              @id @default(autoincrement())
+  clienteId  Int              @map("id_cliente")
+  usuarioId  Int              @map("id_usuario") // Vincula a venda a um usuário/vendedor
+  valorTotal Decimal          @map("valor_total") @db.Decimal(10, 2)
+  desconto   Decimal          @default(0.00) @db.Decimal(10, 2)
+  data       DateTime         @default(now())
+  cliente    Cliente          @relation(fields: [clienteId], references: [id])
+  usuario    Usuarios         @relation(fields: [usuarioId], references: [id])
+  itens      Item[]
+  conta      ContasPendentes?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@index([clienteId, usuarioId])
+  @@map("vendas")
+}
+
+// Modelo para gerenciar contas pendentes
+model ContasPendentes {
+  id            Int      @id @default(autoincrement())
+  vendaId       Int      @unique @map("id_venda")
+  valorPendente Decimal  @default(0.00) @map("valor_pendente") @db.Decimal(10, 2)
+  valorRecebido Decimal  @default(0.00) @map("valor_recebido") @db.Decimal(10, 2)
+  venda         Venda    @relation(fields: [vendaId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([vendaId])
+  @@map("contas_pendentes")
+}
+
+// Modelo para gerenciar itens de uma venda
+model Item {
+  id            Int      @id @default(autoincrement())
+  vendaId       Int      @map("id_venda")
+  produtoId     Int      @map("id_produto")
+  quantidade    Int
+  valorTotal    Decimal  @map("valor_total") @db.Decimal(10, 2)
+  valorUnitario Decimal  @map("valor_unitario") @db.Decimal(10, 2)
+  venda         Venda    @relation(fields: [vendaId], references: [id])
+  produto       Produto  @relation(fields: [produtoId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([vendaId, produtoId])
+  @@map("itens")
+}
