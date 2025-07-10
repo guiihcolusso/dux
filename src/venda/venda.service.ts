@@ -1,4 +1,14 @@
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class VendaService {}
+export class VendaService {
+  listAllSale() {}
+
+  getSale() {}
+
+  createSale() {}
+
+  updateSale() {}
+
+  deleteSale() {}
+}

@@ -12,10 +12,11 @@ datasource db {
 }
 
 // Modelo para gerenciar informações de usuários/vendedores
-model Usuarios {
+model Usuario {
   id        Int      @id @default(autoincrement())
   nome      String   @db.VarChar(255)
   email     String   @unique @db.VarChar(255)
+  telefone  String   @unique @db.VarChar(20)
   password  String   @db.VarChar(255)
   vendas    Venda[]
   createdAt DateTime @default(now())
@@ -40,23 +41,23 @@ model Cliente {
   updatedAt  DateTime @updatedAt
 
   @@index([telefone])
-  @@map("cliente")
+  @@map("clientes")
 }
 
 // Modelo para gerenciar produtos
 model Produto {
-  id        Int       @id @default(autoincrement())
-  nome      String    @db.VarChar(255)
-  marca     String    @db.VarChar(100)
-  custo     Decimal   @db.Decimal(10, 2)
-  revenda   Decimal   @db.Decimal(10, 2)
-  minStock  Int       @default(0) // Estoque mínimo para alertas
-  estoque   Estoque[]
-  itens     Item[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id         Int         @id @default(autoincrement())
+  nome       String      @db.VarChar(255)
+  marca      String      @db.VarChar(100)
+  custo      Decimal     @db.Decimal(10, 2)
+  revenda    Decimal     @db.Decimal(10, 2)
+  minStock   Int         @default(0) // Estoque mínimo para alertas
+  estoque    Estoque[]
+  itensVenda ItemVenda[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 
-  @@map("produto")
+  @@map("produtos")
 }
 
 // Modelo para gerenciar estoque de produtos
@@ -69,7 +70,7 @@ model Estoque {
   updatedAt     DateTime @updatedAt
 
   @@index([produtoId])
-  @@map("estoque")
+  @@map("estoques")
 }
 
 // Modelo para gerenciar vendas
@@ -81,8 +82,8 @@ model Venda {
   desconto   Decimal          @default(0.00) @db.Decimal(10, 2)
   data       DateTime         @default(now())
   cliente    Cliente          @relation(fields: [clienteId], references: [id])
-  usuario    Usuarios         @relation(fields: [usuarioId], references: [id])
-  itens      Item[]
+  usuario    Usuario          @relation(fields: [usuarioId], references: [id])
+  itensVenda ItemVenda[]
   conta      ContasPendentes?
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
@@ -102,11 +103,11 @@ model ContasPendentes {
   updatedAt     DateTime @updatedAt
 
   @@index([vendaId])
-  @@map("contas_pendentes")
+  @@map("ContasPendentes")
 }
 
-// Modelo para gerenciar itens de uma venda
-model Item {
+// Modelo para gerenciar Itens de uma venda
+model ItemVenda {
   id            Int      @id @default(autoincrement())
   vendaId       Int      @map("id_venda")
   produtoId     Int      @map("id_produto")
@@ -119,5 +120,5 @@ model Item {
   updatedAt     DateTime @updatedAt
 
   @@index([vendaId, produtoId])
-  @@map("itens")
+  @@map("ItensVendas")
 }

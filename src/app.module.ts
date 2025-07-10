@@ -7,6 +7,7 @@ import { EstoqueModule } from './estoque/estoque.module';
 import { VendaModule } from './venda/venda.module';
 import { ContasPendentesModule } from './contas-pendentes/contas-pendentes.module';
 import { ItemModule } from './item/item.module';
+import { UsuariosModule } from './usuarios/usuarios.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ItemModule } from './item/item.module';
     VendaModule,
     ContasPendentesModule,
     ItemModule,
+    UsuariosModule,
   ],
   controllers: [],
   providers: [],
