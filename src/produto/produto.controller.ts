@@ -1,27 +1,46 @@
-import { Controller, Delete, Get, Post, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
+import { ProdutoService } from './produto.service';
+import { CreateProdutoDto } from './dto/createProduto.dto';
+import { UpdateProdutoDto } from './dto/updateProduto.dto';
 
 @Controller('produto')
 export class ProdutoController {
+  constructor(private readonly produtoService: ProdutoService) {}
+
   @Get()
-  listAllProduct() {}
+  listAllProduct() {
+    return this.produtoService.listAllProduct();
+  }
 
   @Get(':id')
-  getProduct() {
-    return 'a';
+  getProduct(@Param('id', ParseIntPipe) id: number) {
+    return this.produtoService.getProduct(id);
   }
 
   @Post()
-  createProduct() {
-    return 'a';
+  createProduct(@Body() createProdutoDto: CreateProdutoDto) {
+    return this.produtoService.createProduct(createProdutoDto);
   }
 
   @Put(':id')
-  updateProduct() {
-    return 'a';
+  updateProduct(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateProdutoDto: UpdateProdutoDto,
+  ) {
+    return this.produtoService.updateProduct(id, updateProdutoDto);
   }
 
   @Delete(':id')
-  deleteProduct() {
-    return 'a';
+  deleteProduct(@Param('id', ParseIntPipe) id: number) {
+    return this.produtoService.deleteProduct(id);
   }
 }

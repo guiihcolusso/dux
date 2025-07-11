@@ -13,13 +13,14 @@ describe('UsuariosService', () => {
     id: 1,
     nome: 'Teste',
     email: 'teste@example.com',
+    telefone: '11999933459',
     password: 'securepassword',
   };
 
   type UserOrNull = typeof mockUser | null;
 
   const mockPrismaService = {
-    usuarios: {
+    usuario: {
       findMany: jest.fn(
         (): Promise<(typeof mockUser)[]> => Promise.resolve([mockUser]),
       ),
@@ -65,7 +66,7 @@ describe('UsuariosService', () => {
     it('should return an array of users', async () => {
       const result = await service.listAllUsers();
       expect(result).toEqual([mockUser]);
-      expect(prisma.usuarios.findMany).toHaveBeenCalled();
+      expect(mockPrismaService.usuario.findMany).toHaveBeenCalled();
     });
   });
 
@@ -73,19 +74,18 @@ describe('UsuariosService', () => {
     it('should return a single user', async () => {
       const result = await service.getUser(1);
       expect(result).toEqual(mockUser);
-      expect(prisma.usuarios.findUnique).toHaveBeenCalledWith({
+      expect(mockPrismaService.usuario.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
+        omit: { password: true },
       });
     });
 
     it('should throw NotFoundException if user not found', async () => {
-      mockPrismaService.usuarios.findUnique.mockImplementation(
+      mockPrismaService.usuario.findUnique.mockImplementation(
         (): Promise<UserOrNull> => Promise.resolve(null),
       );
       await expect(service.getUser(999)).rejects.toThrow(
-        new NotFoundException(
-          `Usuário não localizado para o ID informado: 999`,
-        ),
+        new NotFoundException(`Nenhum usuário localizado com o ID: 999.`),
       );
     });
   });
@@ -95,7 +95,7 @@ describe('UsuariosService', () => {
       const createUserDto: CreateUserDto = {
         nome: 'Teste',
         email: 'teste@example.com',
-        telefone: '1199993345',
+        telefone: '11999933459',
         password: 'securepassword',
       };
 
@@ -103,19 +103,20 @@ describe('UsuariosService', () => {
         id: 1,
         nome: 'Teste',
         email: 'teste@example.com',
-        telefone: '1199993345',
+        telefone: '11999933459',
         password: 'hashedPassword123',
       };
 
-      mockPrismaService.usuarios.create.mockResolvedValue(mockUserWithHash);
+      mockPrismaService.usuario.create.mockResolvedValue(mockUserWithHash);
 
       const result = await service.createUser(createUserDto);
 
-      expect(prisma.usuarios.create).toHaveBeenCalledWith({
+      expect(mockPrismaService.usuario.create).toHaveBeenCalledWith({
         data: {
           ...createUserDto,
           password: 'hashedPassword123',
         },
+        omit: { password: true },
       });
 
       expect(result).toEqual(mockUserWithHash);
@@ -124,6 +125,8 @@ describe('UsuariosService', () => {
 
   describe('updateUser', () => {
     it('should update a user', async () => {
+      // O service faz um findUnique antes do update, então precisamos mockar isso
+      mockPrismaService.usuario.findUnique.mockResolvedValueOnce(mockUser);
       const updateUserDto: UpdateUserDto = {
         nome: 'Teste Atualizado',
         email: 'teste.atualizado@example.com',
@@ -131,9 +134,13 @@ describe('UsuariosService', () => {
       };
       const result = await service.updateUser(1, updateUserDto);
       expect(result).toEqual(mockUser);
-      expect(prisma.usuarios.update).toHaveBeenCalledWith({
+      expect(mockPrismaService.usuario.update).toHaveBeenCalledWith({
         where: { id: 1 },
-        data: updateUserDto,
+        data: {
+          ...updateUserDto,
+          password: 'hashedPassword123',
+          telefone: undefined,
+        },
       });
     });
 
@@ -143,32 +150,28 @@ describe('UsuariosService', () => {
         email: 'teste.atualizado@example.com',
         password: 'newpassword',
       };
-      mockPrismaService.usuarios.update.mockImplementation(() =>
-        Promise.reject(
-          new NotFoundException(`Usuário com id 999 não encontrado.`),
-        ),
-      );
+      mockPrismaService.usuario.findUnique.mockResolvedValueOnce(null);
       await expect(service.updateUser(999, updateUserDto)).rejects.toThrow(
-        new NotFoundException(`Usuário com id 999 não encontrado.`),
+        new NotFoundException(`Nenhum usuário localizado com o ID: 999.`),
       );
     });
   });
 
   describe('deleteUser', () => {
     it('should delete a user', async () => {
+      // O service faz um findUnique antes do delete, então precisamos mockar isso
+      mockPrismaService.usuario.findUnique.mockResolvedValueOnce(mockUser);
       const result = await service.deleteUser(1);
       expect(result).toEqual(mockUser);
-      expect(prisma.usuarios.delete).toHaveBeenCalledWith({ where: { id: 1 } });
+      expect(mockPrismaService.usuario.delete).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
     });
 
     it('should throw NotFoundException if user not found', async () => {
-      mockPrismaService.usuarios.delete.mockImplementation(() =>
-        Promise.reject(
-          new NotFoundException(`Usuário com id 999 não encontrado.`),
-        ),
-      );
+      mockPrismaService.usuario.findUnique.mockResolvedValueOnce(null);
       await expect(service.deleteUser(999)).rejects.toThrow(
-        new NotFoundException(`Usuário com id 999 não encontrado.`),
+        new NotFoundException(`Nenhum usuário localizado com o ID: 999.`),
       );
     });
   });

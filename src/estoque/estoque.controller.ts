@@ -1,27 +1,45 @@
-import { Controller, Delete, Get, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+} from '@nestjs/common';
+import { CreateEstoqueDto, UpdateEstoqueDto } from './dto/estoque.dto';
+import { EstoqueService } from './estoque.service';
 
 @Controller('estoque')
 export class EstoqueController {
+  constructor(private readonly estoqueService: EstoqueService) {}
+
   @Get()
-  listAllStocks() {}
+  listAllStocks() {
+    return this.estoqueService.listAllStocks();
+  }
 
   @Get(':id')
-  getStock() {
-    return 'a';
+  async getStock(@Param('id', ParseIntPipe) id: number) {
+    return await this.estoqueService.getStock(id);
   }
 
   @Post()
-  createStock() {
-    return 'a';
+  async createStock(@Body() createEstoqueDto: CreateEstoqueDto) {
+    return await this.estoqueService.createStock(createEstoqueDto);
   }
 
   @Put(':id')
-  updateStock() {
-    return 'a';
+  async updateStock(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateEstoqueDto: UpdateEstoqueDto,
+  ) {
+    return await this.estoqueService.updateStock(id, updateEstoqueDto);
   }
 
   @Delete(':id')
-  deleteStock() {
-    return 'a';
+  async deleteStock(@Param('id', ParseIntPipe) id: number) {
+    return await this.estoqueService.deleteStock(id);
   }
 }

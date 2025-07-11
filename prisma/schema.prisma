@@ -103,7 +103,7 @@ model ContasPendentes {
   updatedAt     DateTime @updatedAt
 
   @@index([vendaId])
-  @@map("ContasPendentes")
+  @@map("contas-pendentes")
 }
 
 // Modelo para gerenciar Itens de uma venda
@@ -120,5 +120,5 @@ model ItemVenda {
   updatedAt     DateTime @updatedAt
 
   @@index([vendaId, produtoId])
-  @@map("ItensVendas")
+  @@map("itens-vendas")
 }

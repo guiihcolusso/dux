@@ -13,6 +13,7 @@ describe('UsuariosController', () => {
     id: 1,
     nome: 'Teste',
     email: 'teste@example.com',
+    telefone: '11999933459',
     password: 'securepassword',
   };
 
@@ -57,7 +58,7 @@ describe('UsuariosController', () => {
     it('should return an array of users', async () => {
       const result = await controller.listAllUsers();
       expect(result).toEqual([mockUser]);
-      expect(service.listAllUsers).toHaveBeenCalled();
+      expect(mockService.listAllUsers).toHaveBeenCalled();
     });
   });
 
@@ -87,11 +88,12 @@ describe('UsuariosController', () => {
       const createUserDto: CreateUserDto = {
         nome: 'Teste',
         email: 'teste@example.com',
+        telefone: '11999933459',
         password: 'securepassword',
       };
       const result = await controller.createUser(createUserDto);
       expect(result).toEqual(mockUser);
-      expect(service.createUser).toHaveBeenCalledWith(createUserDto);
+      expect(mockService.createUser).toHaveBeenCalledWith(createUserDto);
     });
   });
 
@@ -104,7 +106,7 @@ describe('UsuariosController', () => {
       };
       const result = await controller.updateUser(1, updateUserDto);
       expect(result).toEqual(mockUser);
-      expect(service.updateUser).toHaveBeenCalledWith(1, updateUserDto);
+      expect(mockService.updateUser).toHaveBeenCalledWith(1, updateUserDto);
     });
 
     it('should throw NotFoundException if user not found', async () => {
@@ -130,7 +132,7 @@ describe('UsuariosController', () => {
     it('should delete a user', async () => {
       const result = await controller.deleteUser(1);
       expect(result).toBeUndefined();
-      expect(service.deleteUser).toHaveBeenCalledWith(1);
+      expect(mockService.deleteUser).toHaveBeenCalledWith(1);
     });
 
     it('should throw NotFoundException if user not found', async () => {

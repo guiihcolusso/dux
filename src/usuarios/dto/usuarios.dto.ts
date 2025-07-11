@@ -29,7 +29,6 @@ export class CreateUserDto {
   @IsPhoneNumber('BR', {
     message: 'Telefone deve ser um número válido do Brasil',
   })
-  @IsOptional()
   telefone: string;
 
   @ApiProperty({
